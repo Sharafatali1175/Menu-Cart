@@ -1,35 +1,24 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
-
+import React, { createContext, useContext, useReducer, useCallback, useMemo } from "react";
+import { cartReducer } from "../data/CartReducer";
 const CartContext = createContext();
+
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, dispatch] = useReducer(cartReducer, []);
 
-  const addToCart = useCallback((item) => {
-    setCartItems((prev) => {
-      const found = prev.find((i) => i.id === item.id);
-      if (found) {
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      } else {
-        return [...prev, { ...item, quantity: 1 }];
-      }
-    });
-  }, []);
+  const addToCart = useCallback(
+    (item) => dispatch({ type: "ADD", payload: item }),
+    []
+  );
 
-  const removeFromCart = useCallback((id) => {
-    setCartItems((prev) =>
-      prev
-        .map((i) =>
-          i.id === id ? { ...i, quantity: i.quantity - 1 } : i
-        )
-        .filter((i) => i.quantity > 0)
-    );
-  }, []);
+  const removeFromCart = useCallback(
+    (id) => dispatch({ type: "REMOVE", payload: id }),
+    []
+  );
 
-  const deleteFromCart = useCallback((id) => {
-    setCartItems((prev) => prev.filter((i) => i.id !== id));
-  }, []);
+  const deleteFromCart = useCallback(
+    (id) => dispatch({ type: "DELETE", payload: id }),
+    []
+  );
 
   const totalItems = useMemo(
     () => cartItems.reduce((sum, i) => sum + i.quantity, 0),
