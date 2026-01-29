@@ -1,103 +1,54 @@
 import React, { createContext, useContext, useReducer, useCallback, useMemo } from "react";
-
-export const cartReducer = (state, action) => {
-  switch (action.type) {
-    case "ADD": {
-      const found = state.find(i => i.id === action.payload.id);
-      return found
-        ? state.map(i =>
-            i.id === action.payload.id
-              ? { ...i, quantity: i.quantity + 1 }
-              : i
-          )
-        : [...state, { ...action.payload, quantity: 1 }];
-    }
-
-    case "REMOVE":
-      return state
-        .map(i =>
-          i.id === action.payload ? { ...i, quantity: i.quantity - 1 } : i
-        )
-        .filter(i => i.quantity > 0);
-
-    case "DELETE":
-      return state.filter(i => i.id !== action.payload);
-
-    case "SET_INPUT_QUANTITY":
-      return state.map(i =>
-        i.id === action.payload.id
-          ? { ...i, inputQuantity: action.payload.value }
-          : i
-      );
-
-    case "SET_QUANTITY":
-      return state
-        .map(i =>
-          i.id === action.payload.id
-            ? { ...i, quantity: action.payload.quantity, inputQuantity: undefined }
-            : i
-        )
-        .filter(i => i.quantity > 0);
-
-    default:
-      return state;
-  }
-};
+import { cartReducer,initialState } from "../data/cartReduce";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, dispatch] = useReducer(cartReducer, []);
+  const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  const addToCart = useCallback(
-    (item) => dispatch({ type: "ADD", payload: item }),
-    []
-  );
+  const addToCart = useCallback(item => dispatch({ type: "ADD", payload: item }), []);
 
-  const removeFromCart = useCallback(
-    (id) => dispatch({ type: "REMOVE", payload: id }),
-    []
-  );
 
-  const deleteFromCart = useCallback(
-    (id) => dispatch({ type: "DELETE", payload: id }),
-    []
-  );
+  const deleteFromCart = useCallback(id => dispatch({ type: "DELETE", payload: id }), []);
 
-  const setQuantity = useCallback(
-    (id, quantity) =>
-      dispatch({ type: "SET_QUANTITY", payload: { id, quantity } }),
-    []
-  );
 
-  const setInputQuantity = useCallback(
-    (id, value) =>
-      dispatch({ type: "SET_INPUT_QUANTITY", payload: { id, value } }),
-    []
-  );
+  const setQuantity = useCallback((id, quantity) => dispatch({ type: "SET_QUANTITY", payload: { id, quantity } }), []);
 
-  const totalItems = useMemo(
-    () => cartItems.reduce((sum, i) => sum + i.quantity, 0),
-    [cartItems]
-  );
 
-  const totalPrice = useMemo(
-    () =>
-      cartItems
-        .reduce((sum, i) => sum + i.price * i.quantity, 0)
-        .toFixed(2),
-    [cartItems]
-  );
+  const setInputQuantity = useCallback((id, value) => dispatch({ type: "SET_INPUT_QUANTITY", payload: { id, value } }), []);
+
+
+  const setCouponInput = useCallback(value => dispatch({ type: "SET_INPUT_COUPON", payload: value }), []);
+
+
+  const applyCoupon = useCallback(code => dispatch({ type: "APPLY_COUPON", payload: code }), []);
+
+  
+  const removeCoupon = useCallback(() => dispatch({ type: "REMOVE_COUPON" }), []);
+
+
+  const totalItems = useMemo(() => state.items.reduce((sum, i) => sum + i.quantity, 0), [state.items]);
+
+  const totalPrice = useMemo(() => {
+    const total = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    return (total - state.discount).toFixed(2);
+  }, [state.items, state.discount]);
 
   return (
     <CartContext.Provider
       value={{
-        cartItems,
+        cartItems: state.items,
+        coupon: state.coupon,
+        couponInput: state.couponInput,
+        discount: state.discount,
+        couponError: state.couponError,
         addToCart,
-        removeFromCart,
         deleteFromCart,
         setQuantity,
         setInputQuantity,
+        setCouponInput,
+        applyCoupon,
+        removeCoupon,
         totalItems,
         totalPrice,
       }}
