@@ -133,34 +133,41 @@ export default function CartPage() {
       )}
 
       <div className="max-w-xl mx-auto mt-8 space-y-3 px-2">
-        <h3 className="font-bold text-lg">Apply Coupon</h3>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={couponInput}
-            onChange={e => setCouponInput(e.target.value)}
-            placeholder="Enter coupon code"
-            className="flex-1 border p-2 rounded"
-          />
-          <button
-            onClick={handleApplyCoupon}
-            className="bg-green-700 text-white px-4 rounded"
-          >
-            Apply
-          </button>
-        </div>
-        {couponError && <p className="text-red-600 text-sm">{couponError}</p>}
-        {coupon && <p className="text-green-700 text-sm">
-          Coupon <b>{coupon}</b> applied — Discount: ${discount.toFixed(2)}
-        </p>}
-      </div>
+  <h3 className="font-bold text-lg">Apply Coupon</h3>
 
-    
-      <div className="max-w-xl mx-auto mt-6 text-right px-2">
-        <p className="text-xl font-bold">
-          Total Payable: ${totalPrice}
-        </p>
-      </div>
+  <div className="flex flex-col sm:flex-row gap-2">
+    <input
+      type="text"
+      value={couponInput}
+      onChange={e => setCouponInput(e.target.value)}
+      placeholder="Enter coupon code"
+      className="flex-1 border p-2 rounded"
+    />
+    <button
+      onClick={handleApplyCoupon}
+      className="bg-green-700 text-white px-4 py-2 rounded"
+    >
+      Apply
+    </button>
+  </div>
+
+  {couponError && (
+    <p className="text-red-600 text-sm mt-1">{couponError}</p>
+  )}
+
+  {coupon && !couponError && (
+    <p className="text-green-700 text-sm mt-1">
+      Coupon <b>{coupon}</b> applied — Discount: ${discount.toFixed(2)}
+    </p>
+  )}
+</div>
+
+<div className="max-w-xl mx-auto mt-6 text-right px-2">
+  <p className="text-xl font-bold">
+    Total Payable: ${Math.max(0, totalPrice).toFixed(2)}
+  </p>
+</div>
+
     </div>
   );
 }
